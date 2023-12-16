@@ -47,6 +47,12 @@ def register():
 
         # Insert the user into the database
         cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+        mysql.connection.commit()
+        cur.close()
+
+
+        cur = mysql.connection.cursor()
         cur.execute("INSERT INTO log (actor, action) VALUES (%s, %s)", (username, "register"))
         mysql.connection.commit()
         cur.close()
