@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Blog Posts</title>
     <style>
 @font-face {
@@ -13,6 +13,9 @@
     src: url("{{ url_for('static', filename='noto.woff2') }}") format('woff');
 }
 
+body {
+margin:0px;
+}
 
 a {
     text-decoration: none;
@@ -21,7 +24,7 @@ a {
 
 
         .post{
-    width: 95%;
+    width: 82%;
     border: 0px;
     overflow: hidden;
     resize: none;
@@ -37,21 +40,31 @@ a {
     border-radius: 2px;
     border: 1px solid #cacaca;
     padding: 33px;
+    margin-bottom:14px;
         }
 
     .hpost{
-            width: 106%;
+            width: 113%;
     margin-top: -33px;
     padding: 11px;
     margin-left: -34px;
     background-color: #2485e991;
-    }
+    margin-bottom:29px;    
+}
+
+.pmd{
+
+}
+
+pre{
+overflow:auto
+}
     </style>
 </head>
 <body>
     <h2>Selamat datang {{ user_id }}!</h2>
     <a href="/create_post">Create post</a>
-
+    <br>
     
 
     {% for post in posts %}
@@ -88,7 +101,10 @@ document.addEventListener('DOMContentLoaded', function() {
     for (var i = 0; i < elements.length; i++) {
         // Access each element in the loop
         var currentElement = elements[i];
-        currentElement.innerHTML = marked.parse(currentElement.innerHTML)
+	var prcCE = currentElement.innerHTML;
+	prcCE = prcCE.replace(/&gt;/gi, ">");
+        prcCE = prcCE.replace(/&lt;/gi, "<");
+        currentElement.innerHTML = marked.parse(prcCE);
         console.log(currentElement)
     }
 
@@ -101,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var date = new Date(dateString);
 
          var now = new Date();
+date.setHours(date.getHours() + 7);
 
     // Calculate the time difference in milliseconds
     var timeDifference = now - date;
