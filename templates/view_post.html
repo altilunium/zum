@@ -15,8 +15,13 @@
 
 body {
 margin:0px;
+font-family: 'Noto';
 }
 
+.he{
+    color:grey;
+    font-size:13px;
+}
 a {
     text-decoration: none;
     color: #0983bf;
@@ -53,32 +58,79 @@ a {
 }
 
 .pmd{
+    margin: 3px;
+    margin-left: 0px;
+}
 
+.pmd p{
+    margin:0px;
+}
+
+.rep{
+    font-size:10px;
+    font-style: u;
 }
 
 pre{
 overflow:auto
 }
+
+.rblock {
+    padding: 5px 0px;
+    
+}
+
+.shifted{
+    margin-left:15px;
+}
+
+
+#replybox{
+    margin-top:35px;
+}
+
+
     </style>
 </head>
 <body>
-    <h2>Selamat datang {{ user_id }}!</h2>
-    <a href="/create_post">Create post</a>
+   
+    <div style="height:70px"></div>
+
+    <a href="/">Back to dashboard</a>
     <br>
     
 
-    {% for post in posts %}
-        <div class="post" onclick="redirectToURL('/post/{{post['id']}}')" >
-            <div class="hpost"><b>{{ post['username'] }}</b> <span class="dat">{{ post['created_at'] }}</span></div>
+    <div class="post" >
+        {% if post['parent'] != None %}
+            <div class="hpost" onclick="redirectToURL('/post/{{post['parent']}}')"><b>{{ post['username'] }}</b> replying to <b>#{{post['parent']}}</b>  <span class="dat">{{ post['created_at'] }}</span></div>
+        {% else %}
+            <div class="hpost" ><b>{{ post['username'] }}</b>   <span class="dat">{{ post['created_at'] }}</span></div>
+        {% endif %}
+        <p class="pmd">{{ post['content'] }}</p>
+
+        <form method="POST" action="{{ url_for('create_post') }}" id="replybox">
+        <textarea id="content" name="content" style="width: 100%;" rows=7></textarea> 
+        <textarea id="parent" name="parent" style="display:none">{{id}}</textarea>
+        <input type="text" id="title" name="title" style="display:none"><br>
+        <br>
+        <button type="submit">Create Reply</button>
+        </form>
+    </div>
+
+   
+
+    <div class="post" style="border:none">
+    {% for post in posta %}
+        <div class="rblock" id="r{{post['id']}}-p{{post['parent']}}">
+            <div class="he">{{ post['username'] }} <span class="dat">{{ post['created_at'] }}</span> <span>[-]</span></div>
             <p class="pmd">{{ post['content'] }}</p>
+            <span class="rep" onclick="redirectToURL('/post/{{post['id']}}')">Reply</span>
         </div>
     {% endfor %}
+</div>
     
 
-    <form action="{{ url_for('logout') }}" method="post">
-        <button type="submit">Logout</button>
-    </form>
-
+ 
     <br>
     <br>
 
@@ -114,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	prcCE = prcCE.replace(/&gt;/gi, ">");
         prcCE = prcCE.replace(/&lt;/gi, "<");
         currentElement.innerHTML = marked.parse(prcCE);
-        console.log(currentElement)
+        
     }
 
     var elements = document.getElementsByClassName('dat');
@@ -126,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var date = new Date(dateString);
 
          var now = new Date();
-date.setHours(date.getHours() + 7);
+//date.setHours(date.getHours() + 7);
 
     // Calculate the time difference in milliseconds
     var timeDifference = now - date;
@@ -151,9 +203,61 @@ date.setHours(date.getHours() + 7);
 
     elements[i].innerHTML = relativeTime
 
+    }
+
+    function letsGoDeep(dad,elements,i,dadID){
+        for (var j = i;j < elements.length;j++){
+            var currentElement = elements[j];
+            idstring = currentElement.id.toString()
+            if(idstring.includes(dadID)){
+                //console.log(currentElement.outerHTML)
+                dad.appendChild(currentElement)
+                currentElement.classList.add("shifted")
+
+                cID = idstring.split("-")[0]
+                cID = cID.replace("r","p")
+                letsGoDeep(currentElement,elements,j+1,cID)
+            }
+        }
+
+    }
+
+    var elements = document.getElementsByClassName('rblock');
+    theRoot = ""
+    rootMarker = "p" +  "{{post['parent']}}"
+    for (var i = 0; i < elements.length; i++) {
+        // Access each element in the loop
+        var currentElement = elements[i];
+
+        idstring = currentElement.id.toString()
+        console.log("processing",idstring)
+        
+        
+        if (idstring.includes(rootMarker)) {
+            theRoot = idstring.split("-")[0]
+            theRoot = theRoot.replace("r","")
+            lv1Marker = "p"+theRoot
+            currentElement.remove()
+            i = i-1  
+            console.log("removing the OP")
+            console.log(idstring,"is removed")
+        }
+        
+        else{
+            myDad = idstring.split("-")[1]
+            if (myDad == lv1Marker){
+                cID = idstring.split("-")[0]
+                cID = cID.replace("r","p")
+                console.log(idstring,"is the top level")
+                letsGoDeep(currentElement,elements,i+1,cID)
+            } 
+
+        }
+        
 
 
-
+        
+       
     }
 
 

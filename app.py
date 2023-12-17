@@ -1,18 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
-from logging import FileHandler,WARNING
+
 
 
 app = Flask(__name__)
-file_handler = FileHandler('/var/www/html/zum/errorlog.txt')
-file_handler.setLevel(WARNING)
+
 
 
 # Configure MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'root'
+#app.config['MYSQL_PASSWORD'] = 'root'
 app.config['MYSQL_DB'] = 'zum'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
@@ -28,7 +27,7 @@ def home():
         # Fetch user information from the database if needed
         user_id = session['username']
         # Add logic to fetch additional user information if necessary
-        return render_template('dashboard.html', user_id=user_id)
+        return  redirect(url_for('view_posts'))
     else:
         return redirect(url_for('login'))
 
@@ -135,15 +134,24 @@ def create_post():
             user_id = session['user_id']
             title = request.form['title']
             content = request.form['content']
+            parent = request.form['parent']
 
             cur = mysql.connection.cursor()
-            cur.execute("INSERT INTO blog_posts (user_id, title, content) VALUES (%s, %s, %s)",
-                        (user_id, title, content))
-            mysql.connection.commit()
-            cur.close()
-
-            flash('Blog post created successfully!', 'success')
-            return redirect(url_for('dashboard'))
+            if parent == "null":
+                cur.execute("INSERT INTO blog_posts (user_id, title, content,parent) VALUES (%s, %s, %s, NULL)",
+                            (user_id, title, content))
+                mysql.connection.commit()
+                cur.close()
+                flash('Blog post created successfully!', 'success')
+                return redirect(url_for('view_posts'))
+            else:
+                cur.execute("INSERT INTO blog_posts (user_id, title, content,parent) VALUES (%s, %s, %s, %s)",
+                            (user_id, title, content,parent))
+                mysql.connection.commit()
+                cur.close()
+                flash('Blog post created successfully!', 'success')
+                return redirect(url_for('view_post',post_id=parent))
+            
         else:
             flash('You need to log in first.', 'danger')
             return redirect(url_for('login'))
@@ -155,7 +163,7 @@ def create_post():
 def view_posts():
     if 'user_id' in session:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id ORDER BY b.created_at DESC")
+        cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null ORDER BY b.created_at DESC")
         posts = cur.fetchall()
         cur.close()
         return render_template('view_posts.html', posts=posts, user_id=session['username'])
@@ -163,6 +171,24 @@ def view_posts():
         flash('You need to log in first.', 'danger')
         return redirect(url_for('login'))
 
+
+@app.route('/post/<int:post_id>')
+def view_post(post_id):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username, b.parent FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.id = %s", (post_id,))
+    post = cur.fetchone()
+    cur.close()
+
+    if post:
+        cur = mysql.connection.cursor()
+        cur.execute("WITH RECURSIVE content_hierarchy AS (  SELECT id, content, parent, user_id, created_at FROM blog_posts   WHERE id = %s UNION ALL  SELECT t.id, t.content, t.parent, t.user_id, t.created_at FROM blog_posts t INNER JOIN content_hierarchy ch ON t.parent = ch.id ) SELECT c.id , c.content,c.parent, u.username, c.created_at FROM content_hierarchy c JOIN users u ON c.user_id = u.id", (post_id,))
+        posta = cur.fetchall()
+        cur.close()
+        return render_template('view_post.html', post=post, id=post_id, posta=posta)
+    else:
+        flash('Post not found', 'danger')
+        return redirect(url_for('view_posts'))
+   
 
 
 if __name__ == '__main__':
