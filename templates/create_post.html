@@ -23,8 +23,23 @@
         <label for="content">Content:</label>
         <textarea id="content" name="content" cols="40" rows="10" required></textarea><br>
         <textarea id="parent" name="parent" style="display:none">null</textarea>
+        <textarea id="grup" name="grup" style="display:none">null</textarea>
         <button type="submit">Create Post</button>
     </form>
     <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
 </body>
 </html>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    var queryString = window.location.search;
+    var urlParams = new URLSearchParams(queryString);
+    var aValue = urlParams.get('grup');
+    if (aValue !== null){
+        var grupField = document.getElementById("grup")
+        grupField.innerHTML = aValue
+    }
+    console.log(aValue)
+});
+</script>

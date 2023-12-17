@@ -11,7 +11,7 @@ app = Flask(__name__)
 # Configure MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'root'
+#app.config['MYSQL_PASSWORD'] = 'root'
 app.config['MYSQL_DB'] = 'zum'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
@@ -135,15 +135,24 @@ def create_post():
             title = request.form['title']
             content = request.form['content']
             parent = request.form['parent']
+            grup = request.form['grup']
 
             cur = mysql.connection.cursor()
             if parent == "null":
-                cur.execute("INSERT INTO blog_posts (user_id, title, content,parent) VALUES (%s, %s, %s, NULL)",
+                if grup == "null":
+                    cur.execute("INSERT INTO blog_posts (user_id, title, content,parent,group_id) VALUES (%s, %s, %s, NULL,NULL)",
                             (user_id, title, content))
-                mysql.connection.commit()
-                cur.close()
-                flash('Blog post created successfully!', 'success')
-                return redirect(url_for('view_posts'))
+                    mysql.connection.commit()
+                    cur.close()
+                    flash('Blog post created successfully!', 'success')
+                    return redirect(url_for('view_posts'))
+                else:
+                    cur.execute("INSERT INTO blog_posts (user_id, title, content,parent,group_id) VALUES (%s, %s, %s, NULL, %s)",
+                            (user_id, title, content,grup))
+                    mysql.connection.commit()
+                    cur.close()
+                    flash('Blog post created successfully!', 'success')
+                    return redirect(url_for('view_posts_grup',grup_id=grup))
             else:
                 cur.execute("INSERT INTO blog_posts (user_id, title, content,parent) VALUES (%s, %s, %s, %s)",
                             (user_id, title, content,parent))
@@ -163,7 +172,7 @@ def create_post():
 def view_posts():
     if 'user_id' in session:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null ORDER BY b.created_at DESC")
+        cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id is null ORDER BY b.created_at DESC")
         posts = cur.fetchall()
         cur.close()
         return render_template('view_posts.html', posts=posts, user_id=session['username'])
@@ -172,10 +181,23 @@ def view_posts():
         return redirect(url_for('login'))
 
 
+@app.route('/grup/<string:grup_id>')
+def view_posts_grup(grup_id):
+    if 'user_id' in session:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id = %s ORDER BY b.created_at DESC", (grup_id,))
+        posts = cur.fetchall()
+        cur.close()
+        return render_template('view_posts.html', posts=posts, user_id=session['username'], grup=grup_id)
+    else:
+        flash('You need to log in first.', 'danger')
+        return redirect(url_for('login'))
+
+
 @app.route('/post/<int:post_id>')
 def view_post(post_id):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username, b.parent FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.id = %s", (post_id,))
+    cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username, b.parent, b.group_id FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.id = %s", (post_id,))
     post = cur.fetchone()
     cur.close()
 

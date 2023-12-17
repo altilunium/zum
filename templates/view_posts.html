@@ -62,8 +62,12 @@ overflow:auto
     </style>
 </head>
 <body>
-    <h2>Selamat datang {{ user_id }}!</h2>
+    <h2>Selamat datang {{ user_id }} !</h2>
+    {% if grup is defined %}
+    <a href="/create_post?grup={{grup}}">Create post in /{{grup}}/</a>
+    {% else %}
     <a href="/create_post">Create post</a>
+    {% endif %}
     <br>
     
 

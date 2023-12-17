@@ -111,6 +111,7 @@ overflow:auto
         <textarea id="content" name="content" style="width: 100%;" rows=7></textarea> 
         <textarea id="parent" name="parent" style="display:none">{{id}}</textarea>
         <input type="text" id="title" name="title" style="display:none"><br>
+        <textarea id="grup" name="grup" style="display:none">null</textarea>
         <br>
         <button type="submit">Create Reply</button>
         </form>
@@ -130,6 +131,11 @@ overflow:auto
     
 
     <a href="/">Back to dashboard</a>
+    <br>
+
+    {% if post['group_id'] != None %}
+    <a href="/grup/{{post['group_id']}}">Back to /{{post['group_id']}}/</a>
+    {% endif %}
 
  
     <br>
