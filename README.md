@@ -1,7 +1,8 @@
+![image](https://github.com/altilunium/zum/assets/70379302/24eddc99-0753-42f5-8113-3eca66ef9349)
+
 # zum
 
 Yet another forum software written in Flask. Markdown rendering, comment tree and subcategories.
-
 
 
 ### Deployment guide
