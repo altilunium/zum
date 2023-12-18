@@ -1,3 +1,9 @@
+# zum
+
+Yet another forum software written in Flask. Markdown rendering, comment tree and subcategories.
+
+
+
 ### Deployment guide
 
 1. `pip install flask`
