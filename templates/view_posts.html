@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Blog Posts</title>
+    <title>Zum</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon.png') }}">
     <style>
 @font-face {
     font-family: 'Noto';
@@ -59,17 +60,78 @@ a {
 pre{
 overflow:auto
 }
+
+#content{
+    width: 96%;
+    height: 48px;
+    padding: 11px;
+}
+
+#logo {
+    width: 66px;
+    border-radius: 92px;
+    border: 4px solid #fcda93;
+}
+
+.ppost {
+    padding: 10px 32px;
+    border-radius: 38px;
+    background-color: #82b9f2;
+    border: 3px solid #82b9f2;
+    margin-top: 11px;
+}
+
+blockquote{
+        border-left: 1px solid #cacaca;
+    padding-left: 9px;
+    margin-left: 19px;
+    margin-right: 7px;
+}
+
+blockquote p {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.subc {
+    padding: 5px 13px;
+    border-radius: 9px;
+    background-color: #eee;
+    margin: 0px 4px;
+}
+
     </style>
+
 </head>
 <body>
-    <h2>Selamat datang {{ user_id }} !</h2>
-    {% if grup is defined %}
-    <a href="/create_post?grup={{grup}}">Create post in /{{grup}}/</a>
-    {% else %}
-    <a href="/create_post">Create post</a>
-    {% endif %}
-    <br>
+
     
+    <div class="post" style="margin-top:50px">
+        <center>
+            <img id ="logo" src="{{ url_for('static', filename='icon.png') }}">
+        <form method="POST" action="{{ url_for('create_post') }}">
+        <label for="title" style="display:none">Title:</label>
+        <input type="text" id="title" name="title" style="display:none"><br>
+        {% if grup is defined %}
+        <textarea id="content" name="content" placeholder="Hello {{ user_id }}! Post something in /{{grup}}/..." required></textarea><br>
+        {% else %}
+        <textarea id="content" name="content" placeholder="Hello {{ user_id }}! Post something ..." required></textarea><br>
+        {% endif %}
+
+        <textarea id="parent" name="parent" style="display:none">null</textarea>
+
+        {% if grup is defined %}
+        <textarea id="grup" name="grup" style="display:none">{{grup}}</textarea>
+        {% else %}
+        <textarea id="grup" name="grup" style="display:none">null</textarea>
+        {% endif %}
+
+
+        <button type="submit" class ="ppost">Post</button>
+        </center>
+    </form>
+        
+    </div>
 
     {% for post in posts %}
         <div class="post" onclick="redirectToURL('/post/{{post['id']}}')" >
@@ -79,9 +141,28 @@ overflow:auto
     {% endfor %}
     
 
-    <form action="{{ url_for('logout') }}" method="post">
-        <button type="submit">Logout</button>
+    <center>
+
+    <div style="margin-bottom:15px">
+    {% for post in groups %}
+        <span class="subc"><a href="/grup/{{post['group_id']}}">/{{post['group_id']}}/ ({{post['count']}})</a></span>  
+    {% endfor %}
+    </div>
+
+    {% if groups is not defined %}
+        <form action="{{ url_for('home') }}" method="get">
+        <button class="ppost" type="submit">Home</button>
     </form>
+
+    {% endif %}
+
+    <form action="{{ url_for('logout') }}" method="post">
+        <button class="ppost" type="submit">Logout</button>
+    </form>
+
+
+
+    </center>
 
     <br>
     <br>

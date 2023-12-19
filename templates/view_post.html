@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Blog Posts</title>
+    <title>Zum </title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon.png') }}">
     <style>
 @font-face {
     font-family: 'Noto';
@@ -89,6 +90,18 @@ overflow:auto
     margin-top:35px;
 }
 
+blockquote{
+        border-left: 1px solid #cacaca;
+    padding-left: 9px;
+    margin-left: 19px;
+    margin-right: 7px;
+}
+
+blockquote p {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
 
     </style>
 </head>
@@ -130,12 +143,19 @@ overflow:auto
 </div>
     
 
-    <a href="/">Back to dashboard</a>
-    <br>
+    <center>
+
 
     {% if post['group_id'] != None %}
     <a href="/grup/{{post['group_id']}}">Back to /{{post['group_id']}}/</a>
     {% endif %}
+
+    <br>
+    <br>
+    <a href="/">Back to dashboard</a>
+    <br>
+
+    </center>
 
  
     <br>

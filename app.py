@@ -62,10 +62,18 @@ def register():
         mysql.connection.commit()
         cur.close()
 
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cur.fetchone()
+        cur.close()
+
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+
+        return redirect(url_for('view_posts'))
 
 
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
+
 
     return render_template('register.html')
 
@@ -90,13 +98,14 @@ def login():
             cur.execute("INSERT INTO log (actor, action) VALUES (%s, %s)", (session['username'], "login"))
             mysql.connection.commit()
             cur.close()
-
-
-
             return redirect(url_for('view_posts'))
         else:
             flash('Login failed. Please check your username and password.', 'danger')
-    return render_template('login.html')
+    else:
+        if 'user_id' in session:
+            return  redirect(url_for('view_posts'))
+        else:
+            return render_template('login.html')
 
 
 @app.route('/logout', methods=['POST'])
@@ -175,7 +184,14 @@ def view_posts():
         cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id is null ORDER BY b.created_at DESC")
         posts = cur.fetchall()
         cur.close()
-        return render_template('view_posts.html', posts=posts, user_id=session['username'])
+
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT group_id, COUNT(group_id) AS count FROM blog_posts WHERE group_id IS NOT null GROUP BY group_id ORDER BY count desc;")
+        groups = cur.fetchall()
+        cur.close()
+
+
+        return render_template('view_posts.html', posts=posts, user_id=session['username'], groups=groups)
     else:
         flash('You need to log in first.', 'danger')
         return redirect(url_for('login'))
