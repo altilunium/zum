@@ -100,7 +100,15 @@ blockquote p {
     margin: 0px 4px;
 }
 
-    </style>
+.footer {
+    margin-bottom: -23px;
+    margin-left: -17px;
+    margin-top: 26px;
+
+}
+
+</style>
+
 
 </head>
 <body>
@@ -135,8 +143,13 @@ blockquote p {
 
     {% for post in posts %}
         <div class="post" onclick="redirectToURL('/post/{{post['id']}}')" >
-            <div class="hpost"><b>{{ post['username'] }}</b> <span class="dat">{{ post['created_at'] }}</span></div>
+            <div class="hpost"><b>{{ post['username'] }}</b> <span class="dat">{{ post['created_at'] }}</span> |  </div>
             <p class="pmd">{{ post['content'] }}</p>
+            {% if post['com'] == 1 %}
+            <div class="footer"><a href="javascript:void(0)">{{post['com']}} comment</a></div>
+            {% else %}
+            <div class="footer"><a href="javascript:void(0)">{{post['com']}} comments</a></div>
+            {% endif %}
         </div>
     {% endfor %}
     

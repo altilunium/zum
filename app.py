@@ -181,7 +181,7 @@ def create_post():
 def view_posts():
     if 'user_id' in session:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id is null ORDER BY b.created_at DESC")
+        cur.execute("SELECT b.id, b.content, b.created_at, u.username , (SELECT COUNT(c.id) FROM blog_posts c WHERE c.parent = b.id) AS com FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id is null ORDER BY b.created_at DESC")
         posts = cur.fetchall()
         cur.close()
 
@@ -189,25 +189,28 @@ def view_posts():
         cur.execute("SELECT group_id, COUNT(group_id) AS count FROM blog_posts WHERE group_id IS NOT null GROUP BY group_id ORDER BY count desc;")
         groups = cur.fetchall()
         cur.close()
-
-
         return render_template('view_posts.html', posts=posts, user_id=session['username'], groups=groups)
     else:
         flash('You need to log in first.', 'danger')
         return redirect(url_for('login'))
 
 
+
+
 @app.route('/grup/<string:grup_id>')
 def view_posts_grup(grup_id):
     if 'user_id' in session:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT b.id, b.title, b.content, b.created_at, u.username FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id = %s ORDER BY b.created_at DESC", (grup_id,))
+        cur.execute("SELECT b.id,  b.content, b.created_at, u.username, (SELECT COUNT(c.id) FROM blog_posts c WHERE c.parent = b.id) AS com FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id = %s ORDER BY b.created_at DESC", (grup_id,))
         posts = cur.fetchall()
         cur.close()
         return render_template('view_posts.html', posts=posts, user_id=session['username'], grup=grup_id)
     else:
-        flash('You need to log in first.', 'danger')
-        return redirect(url_for('login'))
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT b.id, b.content, b.created_at, u.username, (SELECT COUNT(c.id) FROM blog_posts c WHERE c.parent = b.id) AS com FROM blog_posts b JOIN users u ON b.user_id = u.id WHERE b.parent is null and b.group_id = %s ORDER BY b.created_at DESC", (grup_id,))
+        posts = cur.fetchall()
+        cur.close()
+        return render_template('view_posts.html', posts=posts, user_id='', grup=grup_id)
 
 
 @app.route('/post/<int:post_id>')
