@@ -10,7 +10,7 @@ Yet another forum software written in Flask. Markdown rendering, comment tree an
 1. `pip install flask`
 2. `pip install flask-mysqldb`
 3. Install MySQL, [set the user password](https://stackoverflow.com/questions/41645309/mysql-error-access-denied-for-user-rootlocalhost)
- (for example : "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'yourpasswordhere';"), dump the a.sql
+ (for example : "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'yourpasswordhere';"), dump the zum.sql
 4. Open app.py, configure the MySQL connection, test run (python3 app.py).
 5. `sudo apt install apache2`
 6. sudo apt-get install [libapache2-mod-wsgi-py3](https://stackoverflow.com/questions/2081776/couldnt-find-package-libapache2-mod-wsgi)
