@@ -24,9 +24,6 @@ mysql = MySQL(app)
 @app.route('/')
 def home():
     if 'user_id' in session:
-        # Fetch user information from the database if needed
-        user_id = session['username']
-        # Add logic to fetch additional user information if necessary
         return  redirect(url_for('view_posts'))
     else:
         return redirect(url_for('login'))
@@ -69,6 +66,7 @@ def register():
 
         session['user_id'] = user['id']
         session['username'] = user['username']
+        session['priv'] = user['priv']
 
         return redirect(url_for('view_posts'))
 
@@ -92,6 +90,7 @@ def login():
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             session['username'] = user['username']
+            session['priv'] = user['priv']
             flash('Login successful!', 'success')
 
             cur = mysql.connection.cursor()
@@ -192,6 +191,36 @@ def view_posts():
         return render_template('view_posts.html', posts=posts, user_id=session['username'], groups=groups)
     else:
         flash('You need to log in first.', 'danger')
+        return redirect(url_for('login'))
+
+
+@app.route('/mod')
+def mod_dash():
+    if 'user_id' in session:
+        if session['priv'] == 1:
+            cur = mysql.connection.cursor()
+            cur.execute("SELECT * FROM blog_posts order by id desc")
+            posts = cur.fetchall()
+            cur.close()
+            return render_template('mod.html',posts=posts)
+        else:
+            return  redirect(url_for('home'))
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/delete/<int:post_id>')
+def mod_del(post_id):
+    if 'user_id' in session:
+        if session['priv'] == 1:
+            cur = mysql.connection.cursor()
+            cur.execute("DELETE FROM blog_posts WHERE id = %s",(post_id,))
+            mysql.connection.commit()
+            cur.close()
+            return "Item deleted successfully"
+        else:
+            return  redirect(url_for('home'))
+    else:
         return redirect(url_for('login'))
 
 

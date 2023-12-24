@@ -143,7 +143,7 @@ blockquote p {
 
     {% for post in posts %}
         <div class="post" onclick="redirectToURL('/post/{{post['id']}}')" >
-            <div class="hpost"><b>{{ post['username'] }}</b> <span class="dat">{{ post['created_at'] }}</span> |  </div>
+            <div class="hpost"><b>{{ post['username'] }}</b> <span class="dat">{{ post['created_at'] }}</span>  </div>
             <p class="pmd">{{ post['content'] }}</p>
             {% if post['com'] == 1 %}
             <div class="footer"><a href="javascript:void(0)">{{post['com']}} comment</a></div>
